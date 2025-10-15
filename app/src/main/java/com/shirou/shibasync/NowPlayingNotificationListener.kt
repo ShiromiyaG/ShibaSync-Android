@@ -2,8 +2,8 @@ package com.shirou.shibasync
 
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.MediaMetadataCompat
+import android.media.session.MediaController
+import android.media.MediaMetadata
 import android.content.Intent
 import android.util.Base64
 import android.graphics.Bitmap
@@ -20,14 +20,14 @@ class NowPlayingNotificationListener : NotificationListenerService() {
         val extras = sbn.notification.extras ?: return
         val token = extras.getParcelable<android.media.session.MediaSession.Token>("android.media.session") ?: return
 
-        val controller = MediaSessionCompat(this, token).controller
+        val controller = MediaController(this, token)
         val meta = controller.metadata ?: return
 
-        val title  = meta.getString(MediaMetadataCompat.METADATA_KEY_TITLE) ?: ""
-        val artist = meta.getString(MediaMetadataCompat.METADATA_KEY_ARTIST) ?: ""
-        val album  = meta.getString(MediaMetadataCompat.METADATA_KEY_ALBUM) ?: ""
-        val art: Bitmap? = meta.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART)
-            ?: meta.getBitmap(MediaMetadataCompat.METADATA_KEY_ART)
+        val title  = meta.getString(MediaMetadata.METADATA_KEY_TITLE) ?: ""
+        val artist = meta.getString(MediaMetadata.METADATA_KEY_ARTIST) ?: ""
+        val album  = meta.getString(MediaMetadata.METADATA_KEY_ALBUM) ?: ""
+        val art: Bitmap? = meta.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
+            ?: meta.getBitmap(MediaMetadata.METADATA_KEY_ART)
 
         var coverBase64: String? = null
         art?.let {
