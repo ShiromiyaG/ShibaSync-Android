@@ -739,7 +739,7 @@ class AudioPlaybackService : Service(), AudioManager.OnAudioFocusChangeListener 
     private fun buildNotification(isPlaying: Boolean): Notification {
         val mediaMetadata = MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, "Shiba Sync Stream")
-            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, "Reproduzindo áudio ao vivo")
+            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, "Playing live audio")
             .build()
         mediaSession.setMetadata(mediaMetadata)
         
@@ -755,7 +755,7 @@ class AudioPlaybackService : Service(), AudioManager.OnAudioFocusChangeListener 
         } else {
             NotificationCompat.Action(
                 android.R.drawable.ic_media_play,
-                "Reproduzir",
+                "Play",
                 androidx.media.session.MediaButtonReceiver.buildMediaButtonPendingIntent(
                     this,
                     PlaybackStateCompat.ACTION_PLAY
@@ -853,7 +853,7 @@ class AudioPlaybackService : Service(), AudioManager.OnAudioFocusChangeListener 
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Shiba Sync Stream")
-            .setContentText("Reproduzindo áudio ao vivo")
+            .setContentText("Playing live audio")
             .setSmallIcon(R.drawable.shiba_notification_final)
             .setContentIntent(contentIntent)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)

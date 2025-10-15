@@ -36,7 +36,7 @@ class OboeAudioPlayer {
     fun getUnderrunCount() = nativeGetUnderrunCount()
     fun getLatencyMillis() = nativeGetLatency()
     
-    // ✅ NOVO: Controle de volume (0.0 a 1.0)
+    // ✅ NEW: Volume control (0.0 to 1.0)
     fun setVolume(volume: Float): Boolean {
         val clampedVolume = volume.coerceIn(0.0f, 1.0f)
         return nativeSetVolume(clampedVolume)

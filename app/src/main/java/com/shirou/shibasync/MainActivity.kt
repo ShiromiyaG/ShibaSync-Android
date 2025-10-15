@@ -331,15 +331,15 @@ fun MainScreen(onRoleSelected: (String, String) -> Unit) {
         OutlinedTextField(
             value = serverIpState,
             onValueChange = { serverIpState = it },
-            label = { Text("URL do Servidor") },
-            placeholder = { Text("Ex: http://192.168.1.10:3000") },
+            label = { Text("Server URL") },
+            placeholder = { Text("Example: http://192.168.1.10:3000") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(20.dp))
-        GradientButton(text = "Ser o Emissor (Transmitir)", onClick = { onRoleSelected("sender", serverIpState.text) }, modifier = Modifier.fillMaxWidth())
+        GradientButton(text = "Be the Sender (Transmit)", onClick = { onRoleSelected("sender", serverIpState.text) }, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
-        GradientButton(text = "Ser o Receptor (Ouvir)", onClick = { onRoleSelected("receiver", serverIpState.text) }, modifier = Modifier.fillMaxWidth(), secondary = true)
+        GradientButton(text = "Be the Receiver (Listen)", onClick = { onRoleSelected("receiver", serverIpState.text) }, modifier = Modifier.fillMaxWidth(), secondary = true)
     }
 }
 
@@ -348,7 +348,7 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var socket by remember { mutableStateOf<Socket?>(null) }
-    var status by remember { mutableStateOf("Aguardando...") }
+    var status by remember { mutableStateOf("Waiting...") }
     var audioCaptureService by remember { mutableStateOf<AudioCaptureService?>(null) }
     // Keep a reference to the ServiceConnection so we can unbind later
     var boundServiceConnection by remember { mutableStateOf<ServiceConnection?>(null) }
@@ -364,7 +364,7 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
-            status = "Permissão concedida. Vinculando ao serviço..."
+            status = "Permission granted. Binding to service..."
             permissionGranted = true
             val serviceIntent = Intent(context, AudioCaptureService::class.java)
             context.startForegroundService(serviceIntent)
@@ -374,9 +374,9 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
                         val localService = (service as AudioCaptureService.AudioCaptureBinder).getService()
                         audioCaptureService = localService
                         if (localService.prepareToCapture(result.resultCode, result.data!!)) {
-                            status = "Serviço pronto. Capturando áudio da tela."
+                            status = "Service ready. Capturing screen audio."
                         } else {
-                            status = "Falha ao preparar o serviço de captura."
+                            status = "Failed to prepare capture service."
                         }
                     }
                 }
@@ -388,7 +388,7 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
             boundServiceConnection = serviceConnection
             context.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
         } else {
-            status = "Permissão de captura negada."
+            status = "Capture permission denied."
         }
     }
 
@@ -397,7 +397,7 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
         if (manager != null) {
             mediaProjectionLauncher.launch(manager.createScreenCaptureIntent())
         } else {
-            Toast.makeText(context, "Captura de tela indisponível neste dispositivo.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "Screen capture unavailable on this device.", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -424,21 +424,21 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
             socket = newSocket
             newSocket.on(Socket.EVENT_CONNECT) {
                 scope.launch(Dispatchers.Main) {
-                    status = "✅ Conectado!"
+                    status = "✅ Connected!"
                     newSocket.emit("start-stream")
                     newSocket.emit("request-stats")
                 }
             }
             newSocket.on(Socket.EVENT_DISCONNECT) {
                 scope.launch(Dispatchers.Main) {
-                    status = "❌ Desconectado"
+                    status = "❌ Disconnected"
                     activeSenders = 0
                     activeListeners = 0
                 }
             }
             newSocket.on(Socket.EVENT_CONNECT_ERROR) { args ->
                 scope.launch(Dispatchers.Main) {
-                    status = "❌ Erro: ${args.getOrNull(0)}"
+                    status = "❌ Connection error"
                     activeSenders = 0
                     activeListeners = 0
                 }
@@ -454,7 +454,7 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
             }
             newSocket.connect()
         } catch (e: Exception) {
-            Log.e("SenderScreen", "Erro ao conectar socket", e)
+            Log.e("SenderScreen", "Error connecting socket", e)
             scope.launch(Dispatchers.Main) { status = "❌ Erro ao conectar" }
         }
         onDispose {
@@ -478,9 +478,9 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
             val success = service.startCapture(socket, matchingUid = null) // captura todos apps
             if (success) {
                 isCapturing = true
-                status = "Transmitindo"
+                status = "Transmitting"
             } else {
-                status = "Falha ao iniciar captura."
+                status = "Failed to start capture."
             }
         }
     }
@@ -491,12 +491,12 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
             audioCaptureService?.stopCapture()
         }
         try { socket?.emit("stop-stream") } catch (_: Throwable) {}
-        status = "Transmissão parada."
+        status = "Transmission stopped."
     }
 
     fun stopAndLeave() {
         Log.d("SenderScreen", "stopAndLeave called; isCapturing=$isCapturing, permissionGranted=$permissionGranted")
-        Toast.makeText(context, "Parando transmissão...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Stopping transmission...", Toast.LENGTH_SHORT).show()
 
         // First, unbind if we have bound the service (so the service won't be kept alive by the binding)
         try {
@@ -527,7 +527,7 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
                 audioCaptureService?.stopCapture()
             }
             Log.d("SenderScreen", "Requested stop on AudioCaptureService")
-            Toast.makeText(context, "Captura parada", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Capture stopped", Toast.LENGTH_SHORT).show()
         } catch (e: Throwable) {
             Log.e("SenderScreen", "Error while stopping capture", e)
         }
@@ -559,7 +559,7 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
         // Stop the service as a final measure
         try { context.stopService(Intent(context, AudioCaptureService::class.java)) } catch (_: Throwable) {}
 
-        status = "Transmissão parada. Saindo..."
+        status = "Transmission stopped. Exiting..."
         Log.d("SenderScreen", "stopAndLeave completed; navigating back")
         onBack()
     }
@@ -581,7 +581,7 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text("Modo Emissor", style = MaterialTheme.typography.headlineMedium, color = colorResource(id = R.color.aurora_cyan_light))
+            Text("Sender Mode", style = MaterialTheme.typography.headlineMedium, color = colorResource(id = R.color.aurora_cyan_light))
             Spacer(modifier = Modifier.height(12.dp))
             Surface(
                 shape = RoundedCornerShape(12.dp),
@@ -601,7 +601,7 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
                     .padding(horizontal = 6.dp)
             ) {
                 Text(
-                    text = "Emissores ativos: $activeSenders | Ouvintes ativos: $activeListeners",
+                    text = "Active senders: $activeSenders | Active listeners: $activeListeners",
                     modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
                     textAlign = TextAlign.Center,
                     color = colorResource(id = R.color.aurora_green_light),
@@ -611,27 +611,27 @@ fun SenderScreen(serverIp: String, onBack: () -> Unit) {
             Spacer(modifier = Modifier.height(18.dp))
 
             if (!permissionGranted) {
-                GradientButton(text = "Permitir Captura de Áudio", onClick = {
+                GradientButton(text = "Allow Audio Capture", onClick = {
                     requestScreenCapturePermission()
                 }, modifier = Modifier.fillMaxWidth())
             } else {
                 if (!isCapturing) {
-                    GradientButton(text = "Trocar Fonte de Áudio", onClick = {
+                    GradientButton(text = "Change Audio Source", onClick = {
                         requestScreenCapturePermission()
                     }, modifier = Modifier.fillMaxWidth(), secondary = true)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 if (!isCapturing) {
-                    GradientButton(text = "Iniciar Transmissão", onClick = { startAudioCapture() }, modifier = Modifier.fillMaxWidth())
+                    GradientButton(text = "Start Transmission", onClick = { startAudioCapture() }, modifier = Modifier.fillMaxWidth())
                 } else {
                     Button(onClick = { stopAudioCapture() }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
-                        Text("Parar Transmissão")
+                        Text("Stop Transmission")
                     }
                 }
             }
 
             Spacer(modifier = Modifier.weight(1f))
-            GradientButton(text = "Voltar", onClick = { stopAndLeave() }, modifier = Modifier.fillMaxWidth(), secondary = true)
+            GradientButton(text = "Back", onClick = { stopAndLeave() }, modifier = Modifier.fillMaxWidth(), secondary = true)
         }
     }
 }
@@ -672,7 +672,7 @@ fun ReceiverScreen(serverIp: String, onBack: () -> Unit) {
             try { context.startForegroundService(intent) } catch (_: Throwable) { try { context.startService(intent) } catch (_: Throwable) {} }
             context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
         } else {
-            Toast.makeText(context, "Permissão de notificações necessária para o serviço em primeiro plano.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "Notification permission required for foreground service.", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -725,7 +725,7 @@ fun ReceiverScreen(serverIp: String, onBack: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text("Modo Receptor", style = MaterialTheme.typography.headlineMedium, color = colorResource(id = R.color.aurora_cyan_light))
+            Text("Receiver Mode", style = MaterialTheme.typography.headlineMedium, color = colorResource(id = R.color.aurora_cyan_light))
             Spacer(modifier = Modifier.height(12.dp))
             Surface(
                 shape = RoundedCornerShape(12.dp),
@@ -736,7 +736,7 @@ fun ReceiverScreen(serverIp: String, onBack: () -> Unit) {
                     .padding(horizontal = 6.dp)
             ) {
                 Text(
-                    text = "Emissores ativos: $senderCount | Ouvintes ativos: $listenerCount",
+                    text = "Active senders: $senderCount | Active listeners: $listenerCount",
                     modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
                     textAlign = TextAlign.Center,
                     color = colorResource(id = R.color.aurora_green_light),
@@ -747,18 +747,18 @@ fun ReceiverScreen(serverIp: String, onBack: () -> Unit) {
 
             when (connectionState) {
                 ConnectionState.CONNECTING -> {
-                    Text("Conectando...", textAlign = TextAlign.Center)
+                    Text("Connecting...", textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(16.dp))
                     CircularProgressIndicator(color = colorResource(id = R.color.aurora_purple_light))
                 }
                 ConnectionState.CONNECTED -> {
-                    Text(if (isPlaying) "Reproduzindo..." else "Conectado. Pausado.", textAlign = TextAlign.Center, color = colorResource(id = R.color.aurora_purple_light))
+                    Text(if (isPlaying) "Playing..." else "Connected. Paused.", textAlign = TextAlign.Center, color = colorResource(id = R.color.aurora_purple_light))
                     Spacer(modifier = Modifier.height(24.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        GradientButton(text = if (isPlaying) "Pausar" else "Reproduzir", onClick = { audioService?.togglePlayback() })
+                        GradientButton(text = if (isPlaying) "Pause" else "Play", onClick = { audioService?.togglePlayback() })
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                     Text("Volume", style = MaterialTheme.typography.labelMedium, color = colorResource(id = R.color.aurora_purple_light))
@@ -774,13 +774,13 @@ fun ReceiverScreen(serverIp: String, onBack: () -> Unit) {
                     )
                 }
                 else -> {
-                    Text("Desconectado ou falha na conexão.", color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
+                    Text("Disconnected or connection failure.", color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(16.dp))
-                    GradientButton(text = "Tentar Novamente", onClick = { audioService?.connectToServer(serverIp) }, modifier = Modifier.fillMaxWidth())
+                    GradientButton(text = "Try Again", onClick = { audioService?.connectToServer(serverIp) }, modifier = Modifier.fillMaxWidth())
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
-            GradientButton(text = "Voltar", onClick = { audioService?.stopPlayback(); onBack() }, modifier = Modifier.fillMaxWidth(), secondary = true)
+            GradientButton(text = "Back", onClick = { audioService?.stopPlayback(); onBack() }, modifier = Modifier.fillMaxWidth(), secondary = true)
         }
     }
 }
