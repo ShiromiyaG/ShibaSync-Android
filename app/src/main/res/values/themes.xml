@@ -1,0 +1,37 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- 🌌 Aurora Borealis Theme - MODO ESCURO SEMPRE! -->
+    <style name="Theme.SyncMusic" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Primary: Aurora Green brilhante -->
+        <item name="colorPrimary">@color/aurora_green_light</item>
+        <item name="colorPrimaryVariant">@color/aurora_green</item>
+        <item name="colorOnPrimary">@color/night_sky</item>
+
+        <!-- Secondary: Aurora Purple vibrante -->
+        <item name="colorSecondary">@color/aurora_purple_light</item>
+        <item name="colorSecondaryVariant">@color/aurora_purple</item>
+        <item name="colorOnSecondary">@color/night_sky</item>
+
+        <!-- Tertiary: Aurora Cyan brilhante -->
+        <item name="colorTertiary">@color/aurora_cyan_light</item>
+        <item name="colorTertiaryContainer">@color/aurora_cyan</item>
+        <item name="colorOnTertiary">@color/night_sky</item>
+
+        <!-- Surface: PRETO PROFUNDO -->
+        <item name="colorSurface">@color/night_sky</item>
+        <item name="colorOnSurface">@color/ice_white</item>
+        <item name="colorSurfaceVariant">@color/night_sky_light</item>
+
+        <!-- Background: PRETO TOTAL -->
+        <item name="android:colorBackground">@color/midnight_blue</item>
+        <item name="colorOnBackground">@color/ice_blue</item>
+
+        <!-- Status bar: PRETO TOTAL -->
+        <item name="android:statusBarColor">@color/midnight_blue</item>
+        <item name="android:navigationBarColor">@color/midnight_blue</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Error: Aurora Pink vibrante -->
+        <item name="colorError">@color/aurora_pink_light</item>
+        <item name="colorOnError">@color/night_sky</item>
+    </style>
+</resources>
